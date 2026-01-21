@@ -17,10 +17,8 @@ from src.inference_pipeline.inference import predict
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-BUCKET_NAME = "your-s3-bucket-name" # replace with your S3 bucket name, e.g "my-ml-bucket"
-REGION_NAME = "your-aws-region" # eu-west-3, us-east-1, etc.
-
-S3_BUCKET = os.environ.get("S3_BUCKET", BUCKET_NAME)
+S3_BUCKET = os.environ.get("S3_BUCKET")
+REGION_NAME = os.environ.get("REGION_NAME")
 # These are the folders PATHS inside our S3 bucket (not our local project paths)
 MODEL_KEY = os.environ.get("MODEL_KEY", "models/lgbm_model.pkl") # or models/lgbm_best_model.pkl
 FREQ_ENCODER_KEY = os.environ.get("FREQ_ENCODER_KEY", "models/freq_encoder.pkl")

@@ -42,54 +42,7 @@ This document captures the end-to-end steps for packaging the inference code und
      (cd build/function && zip -r ../src.zip .)
      ```
 
-## 3. (Optional) Rebuild dependency layers
-Use this only when you need to refresh the `housing-regression-core-deps` or `housing-regression-ml-deps` layers.
-
-**CAREFUL !** The compilation of the dependencies must be done **ONLY on Linux** to be compatible with **AWS Lambda Layers** because these wheels are compiled for **Amazon Linux**
-
-### 3.1 Compilation of the dependencies
-- Linux ONLY:
-```bash
-rm -rf build/layers/core build/layers/ml
-mkdir -p build/layers/core/python build/layers/ml/python
-
-# Core/data tooling layer (single source of numpy)
-
-pip install --only-binary=:all: --platform manylinux2014_x86_64 --python-version 3.11 --target build/layers/core/python pandas==2.2.3 joblib==1.4.2 numpy==2.2.0 python-dateutil==2.9.0.post0 pytz==2025.1 tzdata==2025.3 six==1.16.0
-
-
-# Modeling layer (reuse numpy from core via --no-deps)
-pip install --platform manylinux2014_x86_64 --only-binary=:all: --python-version 3.11 --target build/layers/ml/python --no-deps scipy==1.13.1 
-
-pip install --platform manylinux2014_x86_64 --only-binary=:all: --python-version 3.11 --target build/layers/ml/python --no-deps lightgbm==3.3.5 
-
-# Strip tests/docs/caches to stay < 262 MB combined
-find build/layers -type d -name "__pycache__" -prune -exec rm -rf {} +
-rm -rf build/layers/core/python/pandas/tests \
-  build/layers/core/python/pandas/io/tests \
-  build/layers/core/python/numpy/tests \
-  build/layers/core/python/numpy/doc
-rm -rf build/layers/ml/python/scipy/tests \
-  build/layers/ml/python/scipy/fft/tests \
-  build/layers/ml/python/scipy/integrate/tests \
-  build/layers/ml/python/scipy/interpolate/tests \
-  build/layers/ml/python/scipy/linalg/tests \
-  build/layers/ml/python/scipy/optimize/tests \
-  build/layers/ml/python/scipy/signal/tests \
-  build/layers/ml/python/scipy/sparse/tests \
-  build/layers/ml/python/scipy/spatial/tests \
-  build/layers/ml/python/scipy/stats/tests
-
-# Quick size check (expect core ≈90 MB, ml ≈122 MB → total ≈210 MB < 262 MB)
-du -sh build/layers/core build/layers/ml
-
-# Package layers (zip roots must contain python/)
-(cd build/layers/core && zip -r ../../core-layer.zip .)
-(cd build/layers/ml && zip -r ../../ml-layer.zip .)
-```
-After installing, confirm no duplicate `numpy*` folders exist under `build/layers/ml/python`. Both layers combined should now stay under ~255 MB when uncompressed.
-
-### 3.2 Layer creation
+### 3. Layer creation
 Open a terminal in the `phase-1` folder.
 
 - Windows / Limux / MacOS (once we have the compiled dependencies in a .zip file)
@@ -101,7 +54,7 @@ aws lambda publish-layer-version --layer-name housing-regression-core-deps --zip
 aws lambda publish-layer-version --layer-name housing-regression-ml-deps --zip-file fileb://data/layers/ml-layer.zip --compatible-runtimes python3.11
 ```
 
-Record the `LayerVersionArn` outputs; you will need them when attaching layers to the function.
+Save the `LayerVersionArn` outputs; you will need them when attaching layers to the function.
 
 ## 4. Create model artifacts and upload them to S3
 1. Execute the `training pipeline/train.py` and `tune.py` to generate our `lgbm_model.pkl` and `lgbm_best_model.pkl` files. 
@@ -173,11 +126,16 @@ These map directly to the lookups performed in [src/lambda_function.py](src/lamb
   The script must print the expected versions without ImportError, proving `--no-deps` installs are satisfied by the shared core layer.
 2. In the Lambda console, create a test event shaped like the handler expects:
    ```json
-   {
-     "records": [
-       {"year":2021,"quarter":3,"month":7,"median_list_price":259900.0,"median_ppsf":145.3961600865,"median_list_ppsf":140.9792442789,"homes_sold":104.0,"pending_sales":98.0,"new_listings":107.0,"inventory":66.0,"median_dom":48.0,"avg_sale_to_list":1.0160580397,"sold_above_list":0.4326923077,"off_market_in_two_weeks":0.8163265306,"bank":8.0,"bus":1.0,"hospital":0.0,"mall":2.0,"park":15.0,"restaurant":14.0,"school":19.0,"station":0.0,"supermarket":9.0,"Total Population":21501.0,"Median Age":40.0,"Per Capita Income":37886.0,"Total Families Below Poverty":21480.0,"Total Housing Units":9067.0,"Median Rent":943.0,"Median Home Value":182900.0,"Total Labor Force":10937.0,"Unemployed Population":250.0,"Total School Age Population":20604.0,"Total School Enrollment":20604.0,"Median Commute Time":10007.0,"price":255300.5620379616,"lat":39.0811,"lng":-84.4646,"zipcode_freq":94.0,"city_encoded":150644.1629528453}
-     ]
-   }
+      {
+        "resource": "/predict",
+        "path": "/predict",
+        "httpMethod": "POST",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "isBase64Encoded": false,
+        "body": "{\"records\":[{\"year\":2021,\"quarter\":3,\"month\":7,\"median_list_price\":259900.0,\"median_ppsf\":145.3961600865,\"median_list_ppsf\":140.9792442789,\"homes_sold\":104.0,\"pending_sales\":98.0,\"new_listings\":107.0,\"inventory\":66.0,\"median_dom\":48.0,\"avg_sale_to_list\":1.0160580397,\"sold_above_list\":0.4326923077,\"off_market_in_two_weeks\":0.8163265306,\"bank\":8.0,\"bus\":1.0,\"hospital\":0.0,\"mall\":2.0,\"park\":15.0,\"restaurant\":14.0,\"school\":19.0,\"station\":0.0,\"supermarket\":9.0,\"Total Population\":21501.0,\"Median Age\":40.0,\"Per Capita Income\":37886.0,\"Total Families Below Poverty\":21480.0,\"Total Housing Units\":9067.0,\"Median Rent\":943.0,\"Median Home Value\":182900.0,\"Total Labor Force\":10937.0,\"Unemployed Population\":250.0,\"Total School Age Population\":20604.0,\"Total School Enrollment\":20604.0,\"Median Commute Time\":10007.0,\"price\":255300.5620379616,\"lat\":39.0811,\"lng\":-84.4646,\"zipcode_freq\":94.0,\"city_encoded\":150644.1629528453}]}"
+      }
    ```
 2. Invoke the test; watch CloudWatch Logs (`/aws/lambda/<function-name>`) for download messages. `_ensure_local_artifact` caches files under `/tmp/ml_artifacts`, so repeated invocations should skip downloads in the same container.
 
@@ -188,10 +146,11 @@ These map directly to the lookups performed in [src/lambda_function.py](src/lamb
 4. Deploy to a stage (e.g., `prod`) and capture the invoke URL.
 5. Test with curl:
    ```bash
-   curl -X POST "$INVOKE_URL/predict" \
+   curl -X POST "$INVOKE_URL/predict_price" \
      -H "Content-Type: application/json" \
-     -d '{"records": [{"feature_a": 123, "feature_b": "foo"}]}'
+     -d "{\"records\":[{\"year\":2021,\"quarter\":3,\"month\":7,\"median_list_price\":259900.0,\"median_ppsf\":145.3961600865,\"median_list_ppsf\":140.9792442789,\"homes_sold\":104.0,\"pending_sales\":98.0,\"new_listings\":107.0,\"inventory\":66.0,\"median_dom\":48.0,\"avg_sale_to_list\":1.0160580397,\"sold_above_list\":0.4326923077,\"off_market_in_two_weeks\":0.8163265306,\"bank\":8.0,\"bus\":1.0,\"hospital\":0.0,\"mall\":2.0,\"park\":15.0,\"restaurant\":14.0,\"school\":19.0,\"station\":0.0,\"supermarket\":9.0,\"Total Population\":21501.0,\"Median Age\":40.0,\"Per Capita Income\":37886.0,\"Total Families Below Poverty\":21480.0,\"Total Housing Units\":9067.0,\"Median Rent\":943.0,\"Median Home Value\":182900.0,\"Total Labor Force\":10937.0,\"Unemployed Population\":250.0,\"Total School Age Population\":20604.0,\"Total School Enrollment\":20604.0,\"Median Commute Time\":10007.0,\"price\":255300.5620379616,\"lat\":39.0811,\"lng\":-84.4646,\"zipcode_freq\":94.0,\"city_encoded\":150644.1629528453}]}"
    ```
+   
 
 ## 11. Operations checklist
 - Monitor CloudWatch metrics (Duration, Errors, IteratorAge if streaming).
