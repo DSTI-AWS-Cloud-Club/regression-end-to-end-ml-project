@@ -7,6 +7,10 @@ Integrate a ML end-to-end pipeline into S3 and using Lambda call through an API
 - **Lambda** :  Functions that can run a python script
 - **API Gateway**: REST API endpoint service
 
+These services will permit a Data Scientist to deploy its ML end-to-end pipeline into AWS and expose it through an API Endpoint.
+
+![s3+lambda+api schema](/assets/s3+lambda+api-diagram.png)
+
 ## Step 1. Initialise python env
 Open your IDE and open the cloned repo. Open a terminal and run:
 
