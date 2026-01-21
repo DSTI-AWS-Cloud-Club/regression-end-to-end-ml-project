@@ -20,8 +20,8 @@ uv add ---
 ## The AWS services involved
 
 - **S3 Integration**: Data and model storage in `housing-regression-data` bucket
-- ** Lambda ** :  Functions that can run a python script
+- **Lambda** :  Functions that can run a python script
 - **API Gateway**: REST API endpoint service
-- ** EC2** 
+- **EC2** 
 
 

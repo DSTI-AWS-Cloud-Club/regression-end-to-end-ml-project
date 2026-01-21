@@ -1,2 +1,9 @@
 **data
 **models
+**__pycache__
+*.pyc
+**build
+**dist
+**.venv**
+**.env
+*.db
