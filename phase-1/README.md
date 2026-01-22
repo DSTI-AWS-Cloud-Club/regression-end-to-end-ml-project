@@ -93,6 +93,9 @@ To upload the files in `data` to S3:
 - **Select the kernel** for this notebook and execute it
 - **Check** in AWS S3 that you have all the data uploaded to your S3 bucket
 
+### 3.2 Run a smoke test
+- Back in your IDE, open the notebook `phase 1\notebooks\02_smoke_test.ipynb`
+- Run the cell to run a smoke test to verify that the inference pipeline works correctly
 
 ## Step 4. Create a Lambda function
 
@@ -149,7 +152,7 @@ We need to build up the code and dependencies of our Lambda function.
 To fill up the lambda function in AWS, we will need to compress our code in a zip file and upload it.
 
 This code compresses the `src` folder into a zip file.
-(run within /phase-1 folder).
+:warning: **Always** run the terminal within `/phase-1` folder.
 
 1. Clean the build folder.
    - PowerShell:

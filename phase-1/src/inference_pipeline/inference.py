@@ -25,9 +25,9 @@ from src.feature_pipeline.feature_engineering import add_date_features, drop_unu
 # ----------------------------
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-DEFAULT_MODEL = PROJECT_ROOT / "models" / "lgbm_model.pkl"
-DEFAULT_FREQ_ENCODER = PROJECT_ROOT / "models" / "freq_encoder.pkl"
-DEFAULT_TARGET_ENCODER = PROJECT_ROOT / "models" / "target_encoder.pkl"
+DEFAULT_MODEL = PROJECT_ROOT / "data" / "models" / "lgbm_model.pkl"
+DEFAULT_FREQ_ENCODER = PROJECT_ROOT / "data" / "models" / "freq_encoder.pkl"
+DEFAULT_TARGET_ENCODER = PROJECT_ROOT / "data" / "models" / "target_encoder.pkl"
 TRAIN_FE_PATH = PROJECT_ROOT / "data" / "processed" / "feature_engineered_train.csv"
 DEFAULT_OUTPUT = PROJECT_ROOT / "predictions.csv"
 

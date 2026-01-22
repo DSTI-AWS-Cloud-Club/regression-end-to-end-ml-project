@@ -19,7 +19,7 @@ logger.setLevel(logging.INFO)
 
 S3_BUCKET = os.environ.get("S3_BUCKET")
 REGION_NAME = os.environ.get("REGION_NAME")
-# These are the folders PATHS inside our S3 bucket (not our local project paths)
+# These are the folders paths INSIDE the S3 bucket (NOT our local project paths !)
 MODEL_KEY = os.environ.get("MODEL_KEY", "models/lgbm_model.pkl") # or models/lgbm_best_model.pkl
 FREQ_ENCODER_KEY = os.environ.get("FREQ_ENCODER_KEY", "models/freq_encoder.pkl")
 TARGET_ENCODER_KEY = os.environ.get("TARGET_ENCODER_KEY", "models/target_encoder.pkl")
