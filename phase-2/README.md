@@ -12,10 +12,37 @@ This hands-on lab guides you through deploying a complete machine learning appli
 - Test API endpoints and web interfaces
 - Understand AWS networking fundamentals
 
+### 🏗️ Project Components
+1. **FastAPI backend** (`src/api/main.py`) served on port 8000, loading the trained model from S3 and exposing `/predict`.
+2. **Streamlit dashboard** (`app.py`) on port 8501 that visualizes metrics and forwards user actions to the API.
+3. **Shared assets** – `.env` configuration plus S3-hosted datasets and model artifacts downloaded on boot.
+4. **EC2 networking stack** – VPC, subnet, IGW, and security group that keep both services reachable from the internet.
+
 ### Architecture
 
 ![phase-2-ec2-schema](/assets/phase2-vpc-ec2-architecture.png)
 
+## 📚 Table of Contents
+1. [Lab Overview](#-lab-overview)
+2. [Project Components](#-project-components)
+3. [Architecture](#architecture)
+4. [Prerequisites](#-prerequisites)
+5. [Part 1: Network Infrastructure Setup](#part-1-network-infrastructure-setup)
+6. [Part 2: EC2 Instance Creation](#part-2-ec2-instance-creation)
+7. [Part 3: Connect to Your EC2 Instance](#part-3-connect-to-your-ec2-instance)
+8. [Part 4: Instance Configuration](#part-4-instance-configuration)
+9. [Part 5: Application Deployment](#part-5-application-deployment)
+10. [Part 6: Start Services](#part-6-start-services)
+11. [Part 7: (OPTIONAL) Testing and Verification](#part-7-optional-testing-and-verification)
+12. [Part 8: Monitoring and Logs](#part-8-monitoring-and-logs)
+13. [Part 9: Cost Optimization](#part-9-cost-optimization)
+14. [Part 10: Cleanup (When Done)](#part-10-cleanup-when-done)
+15. [Key Learnings Summary](#-key-learnings-summary)
+16. [Troubleshooting Guide](#-troubleshooting-guide)
+17. [Additional Resources](#-additional-resources)
+18. [Congratulations](#-congratulations)
+
+---
 
 ## 📋 Prerequisites
 

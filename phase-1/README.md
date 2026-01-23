@@ -3,8 +3,40 @@
 ## 🎯 Lab Overview
 Deploy the end-to-end ML pipeline by storing assets in S3 and invoking it through a Lambda-backed API.
 
-### Cost: ~ $0 
-The cost of deploying this lab in AWS will be minimal (only for upload of a hundred MB on S3). The Lambda and API Gateway are free.
+### Learning Objectives
+- Package a feature, training, and inference pipeline so it can execute inside AWS Lambda.
+- Configure S3, Lambda, and API Gateway to serve predictions through a managed REST endpoint.
+- Understand how lightweight encoders and model artifacts travel from local storage to the cloud.
+- Exercise the complete inference path by calling the deployed API with realistic payloads.
+
+### 🏗️ Project Components
+1. **Pipelines in `src/`** – Feature, training, and inference flows that transform data and produce predictions.
+2. **Model + encoders** – `freq_encoder.pkl`, `target_encoder.pkl`, and the trained model artifact pulled from S3 at runtime.
+3. **Lambda handler** – `src/lambda_function.py` wires preprocessing, model loading, and prediction responses.
+4. **API Gateway endpoint** – Exposes `/predict` so any client can send housing records and receive estimates.
+
+### Cost: $0 (Free) 
+The cost of deploying this lab in AWS is Free. The Lambda and API Gateway are free up to 1 million requests and the S3 bucket is not filled up to limit.
+
+#### AWS S3 on 🎁 Free Tier
+
+AWS S3 Free Tier gives you, per month for the first 12 months after account creation:
+
+- **5 GB** of S3 Standard storage
+- **20,000 GET** requests
+- **2,000 PUT/COPY/POST/LIST** requests
+- **15 GB of data transfer out to the internet** (per month, shared across AWS services)
+
+#### API Gateway on 🎁 Free Tier
+- **1 million REST API** calls per month  
+- **1 million HTTP API** calls per month  
+- **1 million WebSocket messages** plus **750,000 minutes of connection time** per month  
+- Available **for up to 12 months** after account creation
+
+#### Lambda on 🎁 Free Tier
+- **1 million** free requests per month  
+- **400,000 GB-seconds** of compute time per month
+- **100 GiB** of response streaming per month beyond the first 6 MB per request free.
 
 ### AWS Services Involved
 
@@ -17,6 +49,25 @@ The cost of deploying this lab in AWS will be minimal (only for upload of a hund
 ### Architecture
 
 ![s3+lambda+api schema](/assets/phase1-s3+lambda+api-architecture.png)
+
+## 📚 Table of Contents
+1. [Lab Overview](#-lab-overview)
+2. [Project Components](#-project-components)
+3. [Cost](#cost-0-free)
+4. [AWS Services Involved](#aws-services-involved)
+5. [Architecture](#architecture)
+6. [Part 1: Environment Setup](#part-1-environment-setup)
+7. [Part 2: Understanding the Code](#part-2-understanding-the-code)
+8. [Part 3: Download the data for the lab](#part-3-download-the-data-for-the-lab)
+9. [Part 4: Create a Lambda function](#part-4-create-a-lambda-function)
+10. [Part 5: Testing the lambda function](#part-5-testing-the-lambda-function)
+11. [Part 6: Expose via API Gateway](#part-6-expose-via-api-gateway)
+12. [Part 7: 🧪 Testing Your API](#part-7--testing-your-api)
+13. [End of lab](#-end-of-lab)
+14. [Part 8: About the S3 + Lambda + API Gateway approach](#part-8-about-the-s3--lambda--api-gateway-approach)
+15. [Part 9: Extra resources](#part-9-extra-resources)
+
+---
 
 ## Part 1: Environment Setup
 
@@ -486,17 +537,6 @@ Anyone having access to your invoke URL can now make predictions on **new data**
 - Only S3 storage generates a cost footprint
 - Lambda and API Gateway are serverless, scaling with demand and charging per request
 - Ideal for lightweight projects that need to go live quickly
-
-#### API Gateway on 🎁 Free Tier
-- **1 million REST API** calls per month  
-- **1 million HTTP API** calls per month  
-- **1 million WebSocket messages** plus **750,000 minutes of connection time** per month  
-- Available **for up to 12 months** after account creation
-
-#### Lambda on 🎁 Free Tier
-- **1 million** free requests per month  
-- **400,000 GB-seconds** of compute time per month
-- **100 GiB** of response streaming per month beyond the first 6 MB per request free.
 
 ### Cons
 - **We depend on uploading all on S3**: every `.pkl` artifact and related asset must reside in S3.
