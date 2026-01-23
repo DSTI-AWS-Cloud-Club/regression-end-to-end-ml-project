@@ -1,17 +1,26 @@
 # Phase 1 - Deploy a **complex** ML model in the cloud
-Integrate a ML end-to-end pipeline into S3 and using Lambda call through an API
 
-## The AWS services involved
+## 🎯 Lab Overview
+Deploy the end-to-end ML pipeline by storing assets in S3 and invoking it through a Lambda-backed API.
+
+### Cost: ~ $0 
+The cost of deploying this lab in AWS will be minimal (only for upload of a hundred MB on S3). The Lambda and API Gateway are free.
+
+### AWS Services Involved
 
 - **S3 Integration**: Data and model storage in an S3 bucket
 - **Lambda** :  Functions that can run a python script
 - **API Gateway**: REST API endpoint service
 
-These services will permit a Data Scientist to deploy its ML end-to-end pipeline into AWS and expose it through an API Endpoint.
+**💡 Insight**: Combined, these services let a Data Scientist host the complete pipeline in AWS while exposing predictions via an API endpoint.
 
-![s3+lambda+api schema](/assets/s3+lambda+api-diagram.png)
+### Architecture
 
-## Step 1. Initialise python env
+![s3+lambda+api schema](/assets/phase1-s3+lambda+api-architecture.png)
+
+## Part 1: Environment Setup
+
+### 1.1 Initialise python env
 Open your IDE and open the cloned repo. Open a terminal and run:
 
 ```
@@ -19,7 +28,7 @@ cd phase-1
 uv sync
 ```
 
-### 1.1 Activate environment
+#### 1.1.1 Activate environment
 
 On Windows:
 `.\.venv\Scripts\activate.ps1`  
@@ -27,23 +36,23 @@ On Windows:
 On Linux:
 `source .venv/bin/activate`
 
-## Step 2. Understanding the code
+## Part 2: Understanding the Code
 
-- Take a look at the code in `src`. Check that there are three pipelines
+- Review the `src` directory and note that it contains three coordinated pipelines:
 
-  - *Feature pipeline*: Does the **loading**, **pre-processing** and **feature engineering** (LT) on the raw data. 
+  - *Feature pipeline*: Handles the **loading**, **pre-processing** and **feature engineering** (LT) steps on the raw data. 
     - The output of this pipeline is the `feature_engineered_*.csv` files that you have in `data/processed`.
     - Generates two `.pkl` files:
       - `freq_encoder.pkl`: A python object to make the encoding of the zip codes **from raw data**
       - `target_encoder.pkl`: A python object to make the encoding of the city names **from raw data**
 
-  - *Training pipeline*: This pipeline takes the processed data and trains the the model. 
+  - *Training pipeline*: Consumes the processed data and trains the model. 
     - `train.py`: trains a model and generates a `.pkl` file (python object in a file) containing our model. We will load this file into our Lambda function to make predictions !
     - `tune.py`: uses **Optuna** and **MLflow** to optimize the parameter tuning and to track the models into a database. Thanks to this we will be able to select the best model and track the options !
 
-  - *Inference pipeline*: It uses the **feature pipeline** to preprocess the raw data into the processed data and then imports the `model.pkl` file to generate **predictions**.
+  - *Inference pipeline*: Reuses the feature pipeline to preprocess raw inputs and then loads the `model.pkl` artifact to produce **predictions**.
 
-  - *lambda_function.py*: This is the lambda function that will use the inference pipeline to generate the predictions. It will:
+  - *lambda_function.py*: This Lambda handler orchestrates the inference pipeline to return predictions. It will:
     - Take the **raw input data** from a source (client using API)
     - Load the `*_encoder.pkl` files for treating the raw data
     - Treat the raw data into processed featured data (input of model)
@@ -51,9 +60,9 @@ On Linux:
     - Make a prediction with the model and the processed data.
     - Send back the prediction result
 
-:warning: **On this lab, we are going to focus on the deployment in AWS**. If you want to go further into details of the code, please refer to the source of the project [here](https://www.youtube.com/watch?v=Y0SbCp4fUvA).
+**💡 Insight**: :warning: **On this lab, we are going to focus on the deployment in AWS**. If you want to go further into details of the code, please refer to the source of the project [here](https://www.youtube.com/watch?v=Y0SbCp4fUvA).
 
-## Step 3. Download the data for the lab
+## Part 3: Download the data for the lab
 - Open `phase 1\notebooks\00_download_data.ipynb`
 - When using the notebook for the first time, **choose a kernel** from the **top-right** of the notebook.
 - Choose as kernel the uv environment we have installed in 1.1 `.venv/...`.
@@ -76,12 +85,14 @@ data/
 
 ### 3.1 Push the datasets, models and layer files to S3
 
-Our code needs files to be able to make predictions. Those files we are going to upload them to S3 so Lambda has access to them. We are going to connect the S3 service with Lambda.
+The inference code depends on several artifacts to make predictions. Upload these assets to S3 so the Lambda function can fetch them at runtime, effectively wiring S3 to Lambda.
 
-Thus, are going to upload to S3 all the necessary files for the Lambda function to make predictions:
+Therefore, upload every required file to S3 so the Lambda function can make predictions:
 - The `.pkl` files for processing the raw data
 - The `.pkl` files of our trained models
 - The processed data files to verify the correct column order of our input data
+
+**💡 Insight**: Centralizing the artifacts in S3 is what enables the Lambda function to stay lightweight while still producing predictions.
 
 To upload the files in `data` to S3:
 - Navigate to **S3 Console**. 
@@ -97,13 +108,15 @@ To upload the files in `data` to S3:
 - Back in your IDE, open the notebook `phase 1\notebooks\02_smoke_test.ipynb`
 - Run the cell to run a smoke test to verify that the inference pipeline works correctly
 
-## Step 4. Create a Lambda function
+## Part 4: Create a Lambda function
 
-- In order to run the srcripts in the `src` folder our environment makes more than 500 MB. 
-- We need to reduce it in order to put it inside the Lambda function. In *AWS Lambda* we have a 260 MB limiation per function, we will have to reduce the size and pick the essential packages. The packages were divided in two: 
+- The scripts under `src` require an environment that exceeds 500 MB. 
+- We must slim this down to fit within the 260 MB per-function limit in *AWS Lambda* by selecting only the essential packages. The dependencies are split into two bundles: 
   - **Core dependencies**: containing *numpy*, *pandas* and *joblib*. You have already downlaoded this pack in `/data/layers/core-layer.zip` 
   - **ML dependencies** : containing *lightgbm* and *scipy* packages. You have already downloaded this pack in `/data/layers/ml-layer.zip` 
--  To be able to reuse the packages separately, we are going to create **two Lambda Layers**. The lambda layers are going to be our **python environments** inside *AWS Lamda*. We can use **one layer** on **many lambda** functions, e.g. if we have a layer with *pandas* and *numpy*, we can use all the lambda functions we want using *numpy* and *pandas*. By doing this, we declare the environment (layer) **only once** in *AWS Lambda* instead of copying the whole environment everytime along with our function `lambda_function.py`.
+-  To be able to reuse the packages separately, we are going to create **two Lambda Layers**. The lambda layers are going to be our **python environments** inside *AWS Lamda*. We can use **one layer** on **many lambda** functions, e.g. if we have a layer with *pandas* and *numpy*, we can use all the lambda functions we want using *numpy* and *pandas*.
+
+**💡 Insight**: By doing this, we declare the environment (layer) **only once** in *AWS Lambda* instead of copying the whole environment everytime along with our function `lambda_function.py`.
 
 
 ### 4.1 Creating the Lambda Layers (environments)
@@ -125,7 +138,7 @@ aws lambda publish-layer-version --layer-name housing-regression-core-deps --zip
 aws lambda publish-layer-version --layer-name housing-regression-ml-deps --zip-file fileb://data/layers/ml-layer.zip --compatible-runtimes python3.11
 ```  
 
-Save the `LayerVersionArn` outputs; you will need them when attaching layers to the function.
+**💡 Insight**: Save the `LayerVersionArn` outputs; you will need them when attaching layers to the function.
 
 **NB:** If you have not installed the AWS CLI, you can do it manually in the **Lambda Console**. 
 - Go to **Layers**
@@ -145,7 +158,7 @@ Save the `LayerVersionArn` outputs; you will need them when attaching layers to 
 - Execution role: "Create new role with basic Lambda Permission". We will change it later on.
 - Click **Create function**
 
-We need to build up the code and dependencies of our Lambda function.
+Next, assemble the code bundle that the Lambda function will execute.
 
 #### 4.2.1. Package the Lambda handler ZIP
 
@@ -196,10 +209,9 @@ This code compresses the `src` folder into a zip file.
 
 ### 4.3 Setting up the Lambda function
 
-We need to set up some things for the Lambda function to work.
+A few configuration tweaks are required before the Lambda function can run end to end.
 
-See that the code is throwing an error.  
-We need to specify the path to our `lambda_handler` function inside `lambda_function.py`.
+If the console shows an error, point the runtime at the correct `lambda_handler` within `lambda_function.py`.
 
 #### 4.3.1 Set the Lambda Handler
 - Go to **Runtime settings** and click **Edit**
@@ -262,8 +274,8 @@ We need to give it permissions to read and get objects from S3.
    - :warning: remember to use your own **Bucket name!**
    - Validate, name it (e.g., `AllowModelArtifactsRead`), and save.
 
-### Step 5. :microscope: Testing the lambda function
-Inside the lambda function Interface
+## Part 5: Testing the lambda function
+Inside the Lambda console interface
 - Go to Test
 - In **Test event** put an Event Name `testingHousePrice`
 - In **Event JSON** paste this API call with a raw data input:
@@ -281,7 +293,7 @@ Inside the lambda function Interface
    ```
    - Save the test and run it with **Test**
 
-You should obtain a result like this:
+**💡 Insight**: You should obtain a result like this:
 
 ```json
 {
@@ -293,9 +305,9 @@ You should obtain a result like this:
 }
 ```
 
-## Step 6. Expose via API Gateway
+## Part 6: Expose via API Gateway
 
-We are going to expose our Lambda function to an API Endpoint.
+This section publishes the Lambda function through an API Gateway endpoint.
 
 ### 6.1 Create New API
 
@@ -370,7 +382,7 @@ We are going to expose our Lambda function to an API Endpoint.
    - Example: `https://abc123xyz.execute-api.us-east-1.amazonaws.com/prod`
    - **Copy this URL!** You'll need it for testing
 
-## Step 7: 🧪 Testing Your API
+## Part 7: 🧪 Testing Your API
 
 ### Test 1: Using curl (Command Line)
 
@@ -460,7 +472,7 @@ Invoke-RestMethod -Method Post -Uri "$INVOKE_URL$/predict_price" -ContentType "a
 {"predictions": [235877.92183433237], "count": 1, "actuals": [255300.5620379616]}
 ```
 
-# End of lab
+## ✅ End of lab
 
 :clap: Congratulations ! You have set up a Lambda function in AWS that takes raw data and returns predictions through an API ! 
 
@@ -468,11 +480,12 @@ Invoke-RestMethod -Method Post -Uri "$INVOKE_URL$/predict_price" -ContentType "a
 Now you can integrate **any** of your ML models into **an API Endpoint**.
 Anyone having access to your invoke URL can now make predictions on **new data** :D  
 
-# About the S3 + Lambda + API Gateway approach
-## Pros
-- We consume only S3 storage
-- Lambda and API Gateway are Serverless (they size according to demand and they have a cost per request)
-- For a simple project could work very well and rapidly
+## Part 8: About the S3 + Lambda + API Gateway approach
+
+### Pros
+- Only S3 storage generates a cost footprint
+- Lambda and API Gateway are serverless, scaling with demand and charging per request
+- Ideal for lightweight projects that need to go live quickly
 
 #### API Gateway on 🎁 Free Tier
 - **1 million REST API** calls per month  
@@ -485,19 +498,20 @@ Anyone having access to your invoke URL can now make predictions on **new data**
 - **400,000 GB-seconds** of compute time per month
 - **100 GiB** of response streaming per month beyond the first 6 MB per request free.
 
-## Cons
-- **We depend on uploading all on S3**: we must upload the `.pkl` files and other files to S3.
-- **250 MB limitation**: If the environment (python packages and other dependencies) grows beyond 250 MB we can't deploy as a ZIP. We mitigated this by replacing heavy dependencies (like category-encoders) with lightweight in-house code and, if needed, offloading the rest to Lambda layers. 
-- **No control over environment**: It adds extra handling on the compilation of the layers. **Docker** could solve this
-- **Not a product, just a brick**. No user interface, just backend integration.
+### Cons
+- **We depend on uploading all on S3**: every `.pkl` artifact and related asset must reside in S3.
+- **250 MB limitation**: When the dependency stack exceeds 250 MB, the ZIP no longer fits. We mitigate this by favoring lightweight replacements (e.g., custom encoders) and moving heavy packages into dedicated layers. 
+- **No control over environment**: Building and maintaining the layers adds overhead; **Docker** would provide a more customizable runtime.
+- **Not a product, just a brick**. There is no user interface—only backend integration.
 - **This is not a valid approach for project using big libraries**. 
 :warning: For instance, if we wanted to use the library `xgboost` in our project, it will be too big for fitting it into a layer ! :warning:
 
-## Extra resources
-### E-1. How to (re-)build dependency layers
-Use this only when you need to refresh the `housing-regression-core-deps` or `housing-regression-ml-deps` layers.
+## Part 9: Extra resources
 
-**CAREFUL !** The compilation of the dependencies must be done **ONLY on Linux** to be compatible with **AWS Lambda Layers** because these wheels are compiled for **Amazon Linux**
+### E-1. How to (re-)build dependency layers
+Use these steps only when you must refresh the `housing-regression-core-deps` or `housing-regression-ml-deps` layers.
+
+**CAREFUL !** Compile the dependencies **ONLY on Linux** so the resulting wheels match **Amazon Linux** and remain Lambda-compatible.
 
 #### 1.1 Compilation of the dependencies
 - Linux ONLY:
