@@ -253,7 +253,7 @@ The base role of a Lambda function just has access to Logs (AWS Watchlog service
 We need to give it permissions to read and get objects from S3.
 1. Go to **Configuration -> Permissions**
 2. Click on the IAM role under **Role name** (linked under the Lambda function's Permissions tab). It will open the IAM Roles
-2. Add an inline S3 read policy so the function can download the artifacts: 
+3. Add an inline S3 read policy so the function can download the artifacts: 
    - Choose **Add permissions → Create inline policy**.
    - Switch to the JSON editor and paste:
      ```json
@@ -272,7 +272,7 @@ We need to give it permissions to read and get objects from S3.
      }
      ```
    - :warning: remember to use your own **Bucket name!**
-   - Validate, name it (e.g., `AllowModelArtifactsRead`), and save.
+   - Validate, name it (e.g., `AllowLambdaModelArtifactsRead`), and save.
 
 ## Part 5: Testing the lambda function
 Inside the Lambda console interface

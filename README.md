@@ -47,7 +47,7 @@ The division is as follows:
 
 ## The AWS services involved
 
-- **AWS S3 Integration**: Data and model storage in `housing-regression-data` bucket
+- **AWS S3 Integration**: Data and model storage in `housing-regression-lab` bucket
 - **Amazon ECR**: Container registry for Docker images
 - **Amazon ECS**: Container orchestration with Fargate
 - **Application Load Balancer**: Traffic distribution and routing
