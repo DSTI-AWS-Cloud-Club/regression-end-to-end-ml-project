@@ -17,8 +17,10 @@ from src.inference_pipeline.inference import predict
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# Read the environment variables from our Lambda function
 S3_BUCKET = os.environ.get("S3_BUCKET")
 REGION_NAME = os.environ.get("REGION_NAME")
+
 # These are the folders paths INSIDE the S3 bucket (NOT our local project paths !)
 MODEL_KEY = os.environ.get("MODEL_KEY", "models/lgbm_model.pkl") # or models/lgbm_best_model.pkl
 FREQ_ENCODER_KEY = os.environ.get("FREQ_ENCODER_KEY", "models/freq_encoder.pkl")

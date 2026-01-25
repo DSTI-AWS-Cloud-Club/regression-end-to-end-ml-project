@@ -155,6 +155,20 @@ To upload the files in `data` to S3:
 - **Select the kernel** for this notebook and execute it
 - **Check** in AWS S3 that you have all the data uploaded to your S3 bucket
 
+:warning: To make it work, be sure that you have configured aws CLI on your computer with your account credentials and that your user account has admin permissions.
+
+```bash
+# Configure AWS credentials
+aws configure
+
+# Enter your credentials:
+# AWS Access Key ID: YOUR_ACCESS_KEY
+# AWS Secret Access Key: YOUR_SECRET_KEY
+# Default region name: us-east-1 (or your preferred region)
+# Default output format: json
+```
+
+
 ### 3.2 Run a smoke test
 - Back in your IDE, open the notebook `phase 1\notebooks\02_smoke_test.ipynb`
 - Run the cell to run a smoke test to verify that the inference pipeline works correctly
