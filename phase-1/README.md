@@ -113,7 +113,7 @@ On Linux:
 
 **💡 Insight**: :warning: **On this lab, we are going to focus on the deployment in AWS**. If you want to go further into details of the code, please refer to the source of the project [here](https://www.youtube.com/watch?v=Y0SbCp4fUvA).
 
-## Part 3: Download the data for the lab
+## Part 3: Download the data for the lab and push it to S3
 - Open `phase 1\notebooks\00_download_data.ipynb`
 - When using the notebook for the first time, **choose a kernel** from the **top-right** of the notebook.
 - Choose as kernel the uv environment we have installed in 1.1 `.venv/...`.

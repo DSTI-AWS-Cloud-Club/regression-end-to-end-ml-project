@@ -4,6 +4,8 @@
 
 This hands-on lab guides you through deploying a complete machine learning application on AWS EC2. You'll deploy a **FastAPI backend** (port 8000) and a **Streamlit web interface** (port 8501) on a single EC2 instance with proper networking configuration.
 
+:warning: For this lab we are going to clone and work on **Anes' repo** and follow up the instructions on this README file.
+
 ### Learning Objectives
 - Create and configure an EC2 instance with public internet access
 - Set up VPC networking with Internet Gateway and Security Groups
@@ -55,7 +57,7 @@ This hands-on lab guides you through deploying a complete machine learning appli
 ---
 
 **Estimated Completion Time**: 1-2 hours  
-**AWS Cost**: ~$0.02-0.05/hour (EC2 t2.small on-demand pricing)
+**AWS Cost**: 0$  (EC2 t3.micro is Free on the Free Tier)
 
 ## Part 1: Network Infrastructure Setup
 
@@ -85,14 +87,16 @@ Subnets divide your VPC into smaller networks. A public subnet can communicate w
 1. In **VPC Dashboard**, go to **Subnets** → **Create subnet**
 2. Configure:
    - **VPC ID**: Select `housing-ml-vpc`
-   - **Subnet name**: `housing-ml-public-subnet`
-   - **Availability Zone**: Choose any (e.g., `us-east-1a`)
+   - **Subnet name**: `housing-ml-public-subnet-a`
+   - **Availability Zone**: Choose any (e.g., `eu-west-3a`)
    - **IPv4 CIDR block**: `10.0.1.0/24` (256 IP addresses)
 
 3. Click **Create subnet**
 4. Select the created subnet → **Actions** → **Edit subnet settings**
 5. ✅ Check **Enable auto-assign public IPv4 address**
 6. Click **Save**
+
+:warning: Create another subnet with CIDR `10.0.2.0/24` on another availability zone (e.g. `eu-west-3b`) and with a name `housing-ml-public-subnet-b`
 
 **💡 Insight**: Auto-assigning public IPs ensures instances in this subnet get a public IP automatically, making them accessible from the internet.
 
@@ -180,7 +184,7 @@ Security Groups act as virtual firewalls controlling inbound and outbound traffi
    - **Architecture**: 64-bit (x86)
 
 4. **Instance type**:
-   - Select **t2.small** (1 vCPU, 2 GB RAM). This instance type depends on our project demands, for our case, this is enough.
+   - Select **t3.micro** (2 vCPU, 1 GB RAM). This instance type depends on our project demands, for our case, this is enough.
 
 **💡 Insight**: Amazon Linux 2023 is optimized for AWS, includes python3 pre-installed, and receives regular security updates.
 
@@ -372,12 +376,12 @@ Enter when prompted:
 ## Part 5: Application Deployment
 
 ### 5.1 Clone the Repository
-We are going to clone a fork of the original **Anas Riad repo**.
+We are going to clone **Anes Riad repo**.
 
 ```bash
 cd ~
 # add bash variable with repo name
-repo_name=https://github.com/zBotta/Regression_ML_EndtoEnd.git
+repo_name=https://github.com/anesriad/Regression_ML_EndtoEnd.git
 git clone $repo_name housing-ml
 cd housing-ml
 ```
@@ -817,7 +821,7 @@ ab -n 100 -c 10 -T application/json -p payload.json http://localhost:8000/predic
 ```
 
 
-**💡 Insight**: Load testing helps identify performance bottlenecks. A t2.small can typically handle 10-15 requests/second for ML inference.
+**💡 Insight**: Load testing helps identify performance bottlenecks. A t3.micro can typically handle 10-15 requests/second for ML inference.
 
 ---
 
@@ -991,4 +995,4 @@ You've successfully deployed a production ML application on AWS EC2 with:
 **Lab Version**: 1.0  
 **Last Updated**: January 2026  
 **Estimated Completion Time**: 1-2 hours  
-**AWS Cost**: ~$0.02-0.03/hour (t2.small on-demand pricing)
+**AWS Cost**: 0 (t3.micro on-demand pricing)

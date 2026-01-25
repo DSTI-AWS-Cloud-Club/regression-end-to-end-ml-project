@@ -1,9 +1,18 @@
-# Regression End to End ML project
+The following lab is divided in two main parts:
+- phase-0: a simple Lambda deployment using S3, Lambda and API Gateway AWS Services.
+- phase-1 to phase-3: a lab inspired on the great work made by [Anes Riad](https://github.com/anesriad/Regression_ML_EndtoEnd).
+
+# First lambda function lab (phase-0)
+This lab is a first touch on S3, Lambda and API Gateway. The lab prepares the installation and the deployment of a simple python script in AWS Lambda that will be accessed through an API.
+
+Go to `phase-0/README.md` to get started ! :grin:
+
+# Regression End to End ML project (phase-1 to phase-3)
 This project uses a House TS Data set to create a regression model.
 
 We are going through the steps from loading and treating the data to deploy and serve the model into the cloud.
 
-This lab is inspired on the great work made by [Anas Riad](https://github.com/anesriad/Regression_ML_EndtoEnd).
+This lab is inspired on the great work made by [Anes Riad](https://github.com/anesriad/Regression_ML_EndtoEnd).
 
 The codebase is organized into distinct pipelines following the flow:
 `Load → Preprocess → Feature Engineering → Train → Tune → Evaluate → Inference → Batch → Serve`
@@ -43,7 +52,7 @@ The division is as follows:
 
 1. *Phase1*: Integrate a model into S3 and using Lambda call through an API
 2. *Phase2*: Code our ML pipeline into an application and integrate it in an EC2 instance.
-3. *Phase3*: Full integration (original Anas Riad project) -> Integrate the whole End to End pipeline.
+3. *Phase3*: Full integration (original Anes Riad project) -> Integrate the whole End to End pipeline.
 
 ## The AWS services involved
 
