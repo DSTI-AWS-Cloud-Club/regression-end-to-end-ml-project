@@ -391,6 +391,21 @@ aws ecr get-login-password --region $AWS_REGION |
 
 ### 🏗️ Step 2: Build Docker Images
 
+:warning: Before building the images, check the environment variables are set!
+
+**Windows powershell**:
+
+```powershell
+echo $env:AWS_ACCOUNT_ID
+echo $env:AWS_REGION
+```
+**Linux/MacOS**:
+
+````bash
+echo $AWS_ACCOUNT_ID
+echo $AWS_REGION
+```
+
 ```bash
 # Build backend API image
 docker build -t housing-api:latest -f Dockerfile .
@@ -1333,7 +1348,7 @@ aws ecs describe-task-definition \
 4. **Basic configuration**:
    - **Target group name**: `housing-api-tg`
    - **Protocol**: HTTP
-   - **Port**: 80
+   - **Port**: 8000
    - **VPC**: Select your `housing-ml-vpc`
    - **Protocol version**: HTTP1
 
@@ -1358,11 +1373,13 @@ aws ecs describe-task-definition \
 :warning: **Repeat 1-8 to also create Target Group for the Streamlit UI**:
 - **Choose a target type**: IP addresses
 - **Target group name**: `housing-ui-tg`
-- **Port**: 80
+- **Port**: 8501
 - **VPC**: Select your `housing-ml-vpc`
-- **Health check path**: `/health`
+- **Health check path**: `/dashboard` (Streamlit does not have a `/health` endpoint)
      - **Healthy threshold**: 2
      - **Unhealthy threshold**: 3
+     - **Timeout**: 10 seconds (Streamlit needs more time to launch)
+     - **Success codes**: 200-399 (Streamlit might return 301/302 codes which are in the range of 200-399)
 
 #### AWS CLI (Advanced)
 
@@ -1538,17 +1555,6 @@ aws elbv2 create-listener \
 9. Click **Create**
 
 **Expected Result**: Service creation begins. Status shows "Service created successfully".
-
-:warning: **Repeat steps 1-9 to deploy the Streamlit UI service**:
-- **Task definition family**: `housing-streamlit`
-- **Service name**: `housing-ui-service`
-*Networking*:
-- **Security group**: Select `housing-ui-sg` (the one allowing port 8501)
-*Load Balancing*:
-   - **Application Load Balancer**: Select `Use an existing load balancer` and select `housing-ui-alb`
-   - **Listener**: Selecte `Use an existing listener` and select existing listener (HTTP:80)
-   - **Target group**: Selecte `Use an existing target group` and select `housing-ui-tg`
-   
 #### AWS CLI (Advanced)
 
 ```bash
@@ -1757,7 +1763,7 @@ This part follows similar steps to [Part 9: Deploy FastAPI Backend](#part-9-depl
 **💡 Important**: 
 - Streamlit needs less resources than the API (no ML model loading)
 - The API_URL must point to your **FastAPI ALB DNS** from Part 9
-- Health check uses root path `/` instead of `/health`
+- Health check uses root path `/dashboard` instead of `/health`
 
 5. Make sure to replace:
    - `YOUR_ACCOUNT_ID` with your AWS account ID
@@ -1843,7 +1849,7 @@ aws ecs describe-task-definition \
 
 5. **Health checks**:
    - **Health check protocol**: HTTP
-   - **Health check path**: `/`  ⚠️ **(Note: Different from API - uses root path)**
+   - **Health check path**: `/dashboard`  ⚠️ **(Note: Different from API - uses root path)**
    - **Advanced health check settings**:
      - **Healthy threshold**: 2
      - **Unhealthy threshold**: 3
@@ -1860,7 +1866,7 @@ aws ecs describe-task-definition \
 **📝 Note**: Copy the **Target group ARN** - you'll need it later!
 
 **💡 Key Differences from API Target Group**:
-- Health check path is `/` (root) instead of `/health`
+- Health check path is `/dashboard` (root) instead of `/health`
 - Timeout is 10 seconds (Streamlit takes longer to respond)
 - Success codes allow 200-399 range (Streamlit may return 301/302 redirects)
 
@@ -2122,7 +2128,7 @@ echo "✅ UI Service is stable!"
 1. Navigate to **EC2** → **Load Balancers**
 2. Select `housing-ui-alb`
 3. Copy the **DNS name** (e.g., `housing-ui-alb-123456.us-east-1.elb.amazonaws.com`)
-4. **Open in web browser**: `http://YOUR_UI_ALB_DNS`
+4. **Open in web browser**: `http://YOUR_UI_ALB_DNS/dashboard`
 
 **✅ Success Indicators**:
 - Service status is Active
@@ -2157,15 +2163,15 @@ aws elbv2 describe-target-health \
     --region $AWS_REGION
 
 # Test the UI endpoint (should return HTML)
-curl -s -o /dev/null -w "%{http_code}\n" http://$UI_ALB_DNS/
+curl -s -o /dev/null -w "%{http_code}\n" http://$UI_ALB_DNS/dashboard
 # Expected: 200
 
 echo ""
-echo "🌐 Access your Streamlit UI at: http://$UI_ALB_DNS"
+echo "🌐 Access your Streamlit UI at: http://$UI_ALB_DNS/dashboard"
 ```
 
 **💡 Manual Browser Test**:
-Open your browser and navigate to: `http://$UI_ALB_DNS`
+Open your browser and navigate to: `http://$UI_ALB_DNS/dashboard`
 
 You should see:
 - Streamlit interface with Housing Prediction title
@@ -2343,7 +2349,7 @@ curl -s -X POST http://$API_ALB_DNS/predict \
 ```bash
 echo "=== Testing Streamlit UI ==="
 echo "🌐 Open your browser and navigate to:"
-echo "   http://$UI_ALB_DNS"
+echo "   http://$UI_ALB_DNS/dashboard"
 echo ""
 echo "Expected behavior:"
 echo "  ✅ Page loads with Streamlit interface"
@@ -2353,7 +2359,7 @@ echo "  ✅ Predictions work when requested"
 ```
 
 **Manual Testing Checklist**:
-1. Open browser to `http://$UI_ALB_DNS`
+1. Open browser to `http://$UI_ALB_DNS/dashboard`
 2. Verify page loads without errors
 3. Check that data visualizations render
 4. Test making predictions
@@ -2459,7 +2465,7 @@ fi
 
 # Test 4: UI Accessibility
 echo -n "Test 4: UI Accessibility... "
-response=$(curl -s -o /dev/null -w "%{http_code}" http://$UI_ALB_DNS/)
+response=$(curl -s -o /dev/null -w "%{http_code}" http://$UI_ALB_DNS/dashboard/)
 if [ "$response" = "200" ]; then
     echo -e "${GREEN}✅ PASSED${NC}"
     ((test_passed++))
