@@ -376,12 +376,12 @@ Enter when prompted:
 ## Part 5: Application Deployment
 
 ### 5.1 Clone the Repository
-We are going to clone **Anes Riad repo**.
+We are going to clone a *fork* of **Anes Riad's repo**.
 
 ```bash
 cd ~
 # add bash variable with repo name
-repo_name=https://github.com/anesriad/Regression_ML_EndtoEnd.git
+repo_name=https://github.com/zBotta/Regression_ML_EndtoEnd.git
 git clone $repo_name housing-ml
 cd housing-ml
 ```

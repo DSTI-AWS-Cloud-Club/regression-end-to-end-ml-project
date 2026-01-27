@@ -401,7 +401,7 @@ echo $env:AWS_REGION
 ```
 **Linux/MacOS**:
 
-````bash
+```bash
 echo $AWS_ACCOUNT_ID
 echo $AWS_REGION
 ```
@@ -2700,8 +2700,75 @@ aws ecs update-service \
 ```
 
 ---
+## Part 14: CI/CD
 
-## Part 14: Cleanup
+Navigate into the cloned `Regression_ML_EndtoEnd` project.
+You will find a foler `./github/worklflows`.This folder contains a `.yml` configuration file that permits to activate github actions and update the Docker images we have pushed into AWS ECR.
+
+### 14.1 Fork the original repo
+Go to [Anes Riad](https://github.com/anesriad/Regression_ML_EndtoEnd) repo and click on fork. Be sure that you have logged in your Github account.
+
+When you fork you'll have a copy of the repo in your account.
+
+Now you can make some changes.
+
+- Clone your forked repo in your local machine
+- Replace the following files in the fork repo with the ones we have used all along in the lab:
+    - `app.py` 
+    - `main.py`
+    - `.github/workflows/ci.yml` 
+
+### 14.1 Reconfiguring the ci.yml
+
+In your cloned **FORKED REPO** we need to edit the ci.yml file.
+
+- Open the `ci.yml` file
+- **Replace** the account ID (`747814092552`) by **your account ID**
+- **Replace** the region if necessary: `eu-west-3`
+- Go to your forked repo in **Github**.
+- Go to **Settings -> Environments**. 
+- Create environemnt give it a name `Housing-CICD`
+- In **Environment secrets** click on `Add environment secret` and define the environment variables in the yml file:
+    ```yml
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    ```
+For instance:
+    - **Name**: AWS_ACCESS_KEY_ID
+    - **Value**: `YOUR_ACCOUNT_ID`
+
+:warning: Check that the **names of the cluster and the API and Streamlit services** correspond with the names in your ci.yml file ! (after the `--cluster` and `--service` flags)
+
+```yml
+  aws ecs update-service \
+            --cluster housing-api-cluster-ecs \
+            --service housing-api-service \
+            --force-new-deployment
+``` 
+
+Do the same for `AWS_SECRET_ACCESS_KEY` (your Access key password) and `AWS_REGION`.
+As they are safely saved in the environment secrets, you don't have any risks.
+
+### 14.2 Launch CI-CD pipeline
+Now everytime we commit and push in our **Forked repo** we will trigger the CI-CD pipeline we have configured.
+
+- Git commit and push into the **forked repo**
+- Go to your Github account. Navigate to the forked repo
+- Go to **Actions**
+- You should see a `build-and-deploy` job
+
+After several minutes you should have passed all the steps and have something similar to this.
+
+![ci-cd-passed](/assets/ci-cd-passed.JPG)
+
+:grin: If it worked then, Congratulations! :grin:
+
+You can now **update your apps**, **build the images** and **ship them** automatically into ECS ! 
+
+---
+
+## Part 15: Cleanup
 
 ### 🧹 Important: Cleanup to Avoid Charges
 
