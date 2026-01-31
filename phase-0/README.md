@@ -9,6 +9,39 @@ In this beginner-friendly lab, you'll learn how to deploy a machine learning mod
 
 ---
 
+## Understanding the Architecture
+
+![phase-0-schema](/assets/phase0-s3+lambda+API_Gateway.png)
+
+**Flow**:
+1. Client sends POST request with prices to API Gateway
+2. API Gateway triggers Lambda function
+3. Lambda downloads training data from S3
+4. Lambda trains model and makes predictions
+5. Lambda returns predictions to API Gateway
+6. API Gateway returns response to client
+
+---
+
+## Cost Breakdown
+
+**S3**:
+- Storage: $0.023 per GB per month
+- For 1 MB CSV: ~$0.00002/month (essentially free)
+
+**Lambda**:
+- First 1 million requests/month: FREE
+- First 400,000 GB-seconds compute: FREE
+- Your function uses ~0.5 seconds → 2,000 free requests/month
+
+**API Gateway**:
+- First 1 million requests/month: $3.50
+- After that: $3.50 per million requests
+
+**Total for this lab**: $0 (under free tier limits)
+
+---
+
 ## What You'll Build
 
 A REST API endpoint that:
@@ -423,48 +456,6 @@ print(response.json())
   "input_prices": [3.5, 4.0, 4.5, 2.5]
 }
 ```
-
----
-
-## Understanding the Architecture
-
-```
-┌─────────┐       ┌──────────────┐       ┌─────────┐       ┌────────┐
-│ Client  │──────▶│ API Gateway  │──────▶│ Lambda  │──────▶│   S3   │
-│(Browser)│       │   /predict   │       │Function │       │ Bucket │
-└─────────┘       └──────────────┘       └─────────┘       └────────┘
-     │                    │                     │                │
-     │                    │                     │                │
-     └────────────────────┴─────────────────────┴────────────────┘
-              Response flows back through the same path
-```
-
-**Flow**:
-1. Client sends POST request with prices to API Gateway
-2. API Gateway triggers Lambda function
-3. Lambda downloads training data from S3
-4. Lambda trains model and makes predictions
-5. Lambda returns predictions to API Gateway
-6. API Gateway returns response to client
-
----
-
-## Cost Breakdown
-
-**S3**:
-- Storage: $0.023 per GB per month
-- For 1 MB CSV: ~$0.00002/month (essentially free)
-
-**Lambda**:
-- First 1 million requests/month: FREE
-- First 400,000 GB-seconds compute: FREE
-- Your function uses ~0.5 seconds → 2,000 free requests/month
-
-**API Gateway**:
-- First 1 million requests/month: $3.50
-- After that: $3.50 per million requests
-
-**Total for this lab**: $0 (under free tier limits)
 
 ---
 
