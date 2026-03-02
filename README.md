@@ -46,6 +46,9 @@ Common pre-requisites to all AWS labs are:
 4. Make sure `Git` is installed in your computer. 
     4.1. *To test it*: run `git` in a terminal in your computer without throwing an error.
 
+Make sure you have installed the pre-requisites. [Here](https://github.com/DSTI-AWS-Cloud-Club/regression-end-to-end-ml-project/blob/main/pre-req-installation.md) you have an installation guide.
+
+
 ## Project 
 To ease understanding, since we could have different levels of knowledge between the members of the Club, we are going to divide the project increasing its complexity.  
 The division is as follows:
