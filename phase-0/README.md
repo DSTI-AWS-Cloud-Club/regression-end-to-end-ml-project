@@ -95,43 +95,7 @@ API Gateway creates a front door for your Lambda function, giving it an HTTP URL
 ---
 ## :warning: Installation of pre-requisites
 
-Common pre-requisites to all AWS labs are:
-
-1. Have an **AWS Free Tier account** (an account creation gives you $100 credit and **up to $200**)
-    1.1. You have installed the `aws` CLI on our computer. Go [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and install it depending on your OS.
-    1.2 Make sure you create an `admin` user instead of a `root` user to avoid security problems. 
-    - [Here](https://docs.aws.amazon.com/streams/latest/dev/setting-up.html#setting-up-next-step-2) you will find the steps to do it. 
-    - Make sure that within the **Permissions policies** of your user you have added `AdministratorAccess`.
-0
-2. Have installed an IDE (VSCode, PyCharm) that has **Colab** extension installed
-3. Make sure `UV` is installed in your computer. If not installed go [here](https://docs.astral.sh/uv/getting-started/installation/#__tabbed_1_1) and install it depending on your OS. 
-    2.1. *To test it*: run `uv` in a terminal in your computer without throwing an error.
-4. Make sure `Git` is installed in your computer. 
-    4.1. *To test it*: run `git` in a terminal in your computer without throwing an error.
-
-### Step 1.1 Change AWS root account to an admin account
-
-Make sure you create an `admin` user instead of a `root` user to avoid security problems. 
-    - [Here](https://docs.aws.amazon.com/streams/latest/dev/setting-up.html#setting-up-next-step-2) you will find the steps to do it. 
-    - Make sure that within the **Permissions policies** of your user you have added `AdministratorAccess`.
-
-### Step 1.2 Install AWS CLI
-
-- Go to IAM and create an access key
-
-:warning: To make it work, be sure that you have configured aws CLI on your computer with your account credentials and that your user account has admin permissions.
-
-```bash
-# Configure AWS credentials
-aws configure
-
-# Enter your credentials:
-# AWS Access Key ID: YOUR_ACCESS_KEY
-# AWS Secret Access Key: YOUR_SECRET_KEY
-# Default region name: us-east-1 (or your preferred region)
-# Default output format: json
-```
-### etc etc
+Make sure you have installed the pre-requisites. [Here](https://github.com/DSTI-AWS-Cloud-Club/regression-end-to-end-ml-project/blob/main/pre-req-installation.md) you have an installation guide.
 
 ---
 
