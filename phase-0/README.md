@@ -150,7 +150,7 @@ On Linux:
 1. Click on your newly created bucket name
 2. Click **"Upload"**
 3. Click **"Add files"**
-4. Select the `demand_data.csv` file from your local `phase-0/data/` folder
+4. Select the `demand_data.csv` file from your local `phase-0/data_s3/` folder
 5. Click **"Upload"**
 6. Wait for the upload to complete (you'll see a green success message)
 7. Click **"Close"**
